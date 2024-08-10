@@ -1,8 +1,6 @@
-use std::borrow::Cow;
-
 use super::{Multiname, Namespace};
 use crate::{
-    error::{Error, Result},
+    error::{RabcError, Result},
     StreamReader, StreamWriter,
 };
 
@@ -148,15 +146,10 @@ impl ConstantPool {
     }
 
     #[inline]
-    fn get<'a, T>(
-        &'a self,
-        name: impl Into<Cow<'static, str>>,
-        container: &'a [T],
-        index: u32,
-    ) -> Result<&T> {
+    fn get<'a, T>(&'a self, name: &'static str, container: &'a [T], index: u32) -> Result<&T> {
         container
             .get(index as usize)
-            .ok_or_else(|| Error::index_out_of_bounds(name, index as usize, container.len()))
+            .ok_or_else(|| RabcError::IndexOutOfBounds(name, index as usize, container.len()))
     }
 
     #[inline]

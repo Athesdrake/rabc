@@ -34,7 +34,7 @@ impl StreamReader {
     }
     #[cfg(not(feature = "flate2"))]
     pub fn inflate_zlib(&mut self, _capacity: usize) -> Result<()> {
-        use crate::error::Error;
+        use crate::error::RabcError;
         Err(Error::unsupported_compression("zlib"))
     }
 
@@ -68,7 +68,7 @@ impl StreamReader {
     }
     #[cfg(not(feature = "lzma-rs"))]
     pub fn inflate_lzma(&mut self, _capacity: usize) -> Result<()> {
-        use crate::error::Error;
+        use crate::error::RabcError;
         Err(Error::unsupported_compression("lzma"))
     }
 

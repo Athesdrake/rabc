@@ -1,5 +1,5 @@
 use crate::{
-    error::{Error, Result},
+    error::{RabcError, Result},
     StreamReader, StreamWriter,
 };
 
@@ -52,7 +52,7 @@ impl NamespaceKind {
             0x19 => Ok(Self::Explicit),
             0x1A => Ok(Self::StaticProtected),
             0x05 => Ok(Self::Private),
-            _ => Err(Error::InvalidNamespaceType(id)),
+            _ => Err(RabcError::InvalidNamespaceType(id)),
         }
     }
 }

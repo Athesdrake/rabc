@@ -37,7 +37,7 @@ impl StreamWriter {
     }
     #[cfg(not(feature = "flate2"))]
     pub fn deflate_zlib(&mut self, _offset: usize, _length: usize) -> Result<()> {
-        use crate::error::Error;
+        use crate::error::RabcError;
         Err(Error::unsupported_compression("zlib"))
     }
 
@@ -72,7 +72,7 @@ impl StreamWriter {
     }
     #[cfg(not(feature = "lzma-rs"))]
     pub fn deflate_lzma(&mut self, _offset: usize, _length: usize) -> Result<()> {
-        use crate::error::Error;
+        use crate::error::RabcError;
         Err(Error::unsupported_compression("lzma"))
     }
 

@@ -1,5 +1,5 @@
 use super::info::*;
-use crate::error::{Error, Result};
+use crate::error::{RabcError, Result};
 use crate::{StreamReader, StreamWriter};
 
 #[derive(Debug, PartialEq, Default)]
@@ -64,7 +64,7 @@ impl AbcFile {
             let index = stream.read_u30()?;
             let method = methods
                 .get_mut(index as usize)
-                .ok_or(Error::MethodOutOfBound(index))?;
+                .ok_or(RabcError::MethodOutOfBound(index))?;
             method.read_body(stream)?;
         }
 
@@ -122,7 +122,7 @@ impl AbcFile {
     pub fn get_method(&self, index: u32) -> Result<&Method> {
         self.methods
             .get(index as usize)
-            .ok_or(Error::index_out_of_bounds(
+            .ok_or(RabcError::IndexOutOfBounds(
                 "methods",
                 index as usize,
                 self.methods.len(),
@@ -132,7 +132,7 @@ impl AbcFile {
     pub fn get_class(&self, index: u32) -> Result<&Class> {
         self.classes
             .get(index as usize)
-            .ok_or(Error::index_out_of_bounds(
+            .ok_or(RabcError::IndexOutOfBounds(
                 "classes",
                 index as usize,
                 self.classes.len(),
@@ -142,7 +142,7 @@ impl AbcFile {
     pub fn get_script(&self, index: u32) -> Result<&Script> {
         self.scripts
             .get(index as usize)
-            .ok_or(Error::index_out_of_bounds(
+            .ok_or(RabcError::IndexOutOfBounds(
                 "scripts",
                 index as usize,
                 self.scripts.len(),
@@ -152,7 +152,7 @@ impl AbcFile {
     pub fn get_metadata(&self, index: u32) -> Result<&Metadata> {
         self.metadatas
             .get(index as usize)
-            .ok_or(Error::index_out_of_bounds(
+            .ok_or(RabcError::IndexOutOfBounds(
                 "metadatas",
                 index as usize,
                 self.metadatas.len(),

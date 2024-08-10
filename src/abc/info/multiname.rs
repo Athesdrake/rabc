@@ -1,5 +1,5 @@
 use crate::{
-    error::{Error, Result},
+    error::{RabcError, Result},
     StreamReader, StreamWriter,
 };
 
@@ -150,7 +150,7 @@ impl Multiname {
             0x1B => Ok(Self::MultinameL(MultiL::read(stream)?)),
             0x1C => Ok(Self::MultinameLA(MultiL::read(stream)?)),
             0x1D => Ok(Self::Typename(Typename::read(stream)?)),
-            kind => Err(Error::InvalidMultinameKind(kind)),
+            kind => Err(RabcError::InvalidMultinameKind(kind)),
         }
     }
 

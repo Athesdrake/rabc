@@ -1,5 +1,5 @@
 use crate::{
-    error::{Error, Result},
+    error::{RabcError, Result},
     StreamReader, StreamWriter,
 };
 use bitflags::bitflags;
@@ -73,7 +73,7 @@ impl Trait {
             4 => Ok(Self::Class(IndexTrait::read(stream, name, attr)?)),
             5 => Ok(Self::Function(IndexTrait::read(stream, name, attr)?)),
             6 => Ok(Self::Const(SlotTrait::read(stream, name, attr)?)),
-            k => Err(Error::InvalidTraitKind(k)),
+            k => Err(RabcError::InvalidTraitKind(k)),
         }
     }
 

@@ -1,5 +1,5 @@
 use crate::{
-    error::{Error, Result},
+    error::{RabcError, Result},
     swf::{datatypes::Rect, tags::*},
     StreamReader, StreamWriter,
 };
@@ -52,7 +52,16 @@ impl Header {
         let mut signature = [0u8; 3];
         stream.read_exact(&mut signature)?;
         if &signature[1..3] != b"WS" {
-            return Err(Error::invalid_signature("Invalid signature"));
+            return Err(RabcError::InvalidSignature(
+                signature
+                    .iter()
+                    .map(|&b| {
+                        char::from_u32(b.into())
+                            .map(|c| c.to_string())
+                            .unwrap_or_else(|| format!("\\x{:02x}", b))
+                    })
+                    .collect(),
+            ));
         }
 
         let compression = is_valid_compression(signature[0])?;
@@ -224,7 +233,7 @@ fn is_valid_compression(signature: u8) -> Result<Compression> {
         b'F' => Ok(Compression::None),
         b'C' => Ok(Compression::Zlib),
         b'Z' => Ok(Compression::Lzma),
-        _ => Err(Error::invalid_compression("Invalid compression")),
+        b => Err(RabcError::InvalidCompression(char::from(b))),
     }
 }
 
