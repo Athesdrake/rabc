@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     abc::Method,
-    error::{Error, Result},
+    error::{RabcError, Result},
     StreamReader,
 };
 use std::collections::HashMap;
@@ -57,7 +57,7 @@ impl Method {
 fn parse(stream: &mut StreamReader) -> Result<Instruction> {
     let addr = stream.pos();
     let byte = stream.read_u8()?;
-    let opcode = OpCode::from_u8(byte).ok_or(Error::InvalidOpCode(byte))?;
+    let opcode = OpCode::from_u8(byte).ok_or(RabcError::InvalidOpCode(byte))?;
     let op = match opcode {
         OpCode::GetSuper => Op::GetSuper(opargs::MultinameArg {
             mn: stream.read_u30()?,
