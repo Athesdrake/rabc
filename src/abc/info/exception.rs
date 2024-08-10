@@ -1,6 +1,6 @@
 use crate::{error::Result, StreamReader, StreamWriter};
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub struct Exception {
     pub from: u32,
     pub to: u32,
@@ -11,13 +11,7 @@ pub struct Exception {
 
 impl Exception {
     pub fn new() -> Self {
-        Self {
-            from: 0,
-            to: 0,
-            target: 0,
-            type_: 0,
-            var_name: 0,
-        }
+        Self::default()
     }
 
     pub fn read(stream: &mut StreamReader) -> Result<Self> {

@@ -18,25 +18,25 @@ pub enum Multiname {
     Typename(Typename),
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub struct QName {
     pub ns: u32,
     pub name: u32,
 }
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub struct RTQName {
     pub name: u32,
 }
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub struct Multi {
     pub name: u32,
     pub ns_set: u32,
 }
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub struct MultiL {
     pub ns_set: u32,
 }
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub struct Typename {
     pub qname: u32,
     pub types: Vec<u32>,
@@ -118,7 +118,7 @@ impl Typename {
 
 impl Multiname {
     pub fn new() -> Self {
-        Self::QName(QName { ns: 0, name: 0 })
+        Self::default()
     }
 
     pub fn kind(&self) -> u8 {
@@ -178,5 +178,11 @@ impl Multiname {
             Self::Multiname(mn) | Self::MultinameA(mn) => Some(mn.name),
             Self::MultinameL(_) | Self::MultinameLA(_) | Self::Typename(_) => None,
         }
+    }
+}
+
+impl Default for Multiname {
+    fn default() -> Self {
+        Self::QName(QName::default())
     }
 }

@@ -2,17 +2,9 @@ use crate::error::Result;
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::io::Write;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct StreamWriter {
     buffer: Vec<u8>,
-}
-
-impl Default for StreamWriter {
-    fn default() -> Self {
-        Self {
-            buffer: Default::default(),
-        }
-    }
 }
 
 impl StreamWriter {
@@ -156,12 +148,12 @@ impl StreamWriter {
     // Read a variable-length signed integer. See https://en.wikipedia.org/wiki/LEB128 for more informations.
     #[inline]
     pub fn write_i30(&mut self, value: i32) -> Result<()> {
-        Ok(self.write_u30(value as u32)?)
+        self.write_u30(value as u32)
     }
 
     #[inline]
     pub fn write_exact(&mut self, buf: &[u8]) -> Result<()> {
-        self.buffer.write(buf)?;
+        self.buffer.write_all(buf)?;
         Ok(())
     }
 
@@ -181,12 +173,16 @@ impl StreamWriter {
 
     #[inline]
     pub fn write_stream(&mut self, value: &StreamWriter) -> Result<()> {
-        Ok(self.write_exact(&value.buffer)?)
+        self.write_exact(&value.buffer)
     }
 
     #[inline]
     pub fn len(&self) -> usize {
         self.buffer.len()
+    }
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     #[inline]

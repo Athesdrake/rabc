@@ -127,7 +127,7 @@ impl Tag {
     }
 
     pub fn write(&self, stream: &mut StreamWriter, movie: &Movie) -> Result<()> {
-        Ok(match self {
+        match self {
             Tag::DefineBinaryData(t) => t.write(stream, movie)?,
             Tag::DoABC(t) => t.write(stream, movie)?,
             Tag::End(t) => t.write(stream, movie)?,
@@ -138,7 +138,8 @@ impl Tag {
             Tag::SetBackgroundColor(t) => t.write(stream, movie)?,
             Tag::SymbolClass(t) => t.write(stream, movie)?,
             Tag::Unknown(t) => t.write(stream, movie)?,
-        })
+        };
+        Ok(())
     }
 }
 

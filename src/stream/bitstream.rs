@@ -86,7 +86,7 @@ impl<'a> BitStreamWriter<'a> {
             }
 
             if n_bits > 0 {
-                value = value & (1 << n_bits) - 1;
+                value &= (1 << n_bits) - 1;
             }
         }
         Ok(())
@@ -121,7 +121,7 @@ impl<'a> BitStreamWriter<'a> {
     }
     #[inline]
     pub fn calc_sbits(value: i32) -> u8 {
-        Self::calc_ubits(value.abs() as u32) + 1
+        Self::calc_ubits(value.unsigned_abs()) + 1
     }
 }
 
@@ -141,7 +141,7 @@ mod tests {
         (value as f64).log2().ceil() as u8
     }
     fn calc_sbits_math(value: i32) -> u8 {
-        calc_ubits_math(value.abs() as u32) + 1
+        calc_ubits_math(value.unsigned_abs()) + 1
     }
 
     #[test]

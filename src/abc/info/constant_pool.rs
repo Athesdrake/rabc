@@ -6,7 +6,7 @@ use crate::{
     StreamReader, StreamWriter,
 };
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct ConstantPool {
     pub integers: Vec<i32>,
     pub uintegers: Vec<u32>,
@@ -19,15 +19,7 @@ pub struct ConstantPool {
 
 impl ConstantPool {
     pub fn new() -> Self {
-        Self {
-            integers: Vec::new(),
-            uintegers: Vec::new(),
-            doubles: Vec::new(),
-            strings: Vec::new(),
-            namespaces: Vec::new(),
-            ns_sets: Vec::new(),
-            multinames: Vec::new(),
-        }
+        Self::default()
     }
 
     pub fn read(stream: &mut StreamReader) -> Result<Self> {
@@ -159,7 +151,7 @@ impl ConstantPool {
     fn get<'a, T>(
         &'a self,
         name: impl Into<Cow<'static, str>>,
-        container: &'a Vec<T>,
+        container: &'a [T],
         index: u32,
     ) -> Result<&T> {
         container

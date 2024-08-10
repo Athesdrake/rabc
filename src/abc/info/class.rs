@@ -80,7 +80,7 @@ impl Class {
 
         stream.write_u30(self.name)?;
         stream.write_u30(self.super_name)?;
-        stream.write_u8(self.flags.bits() as u8)?;
+        stream.write_u8(self.flags.bits())?;
 
         if is_protected {
             stream.write_u30(self.protected_ns)?;

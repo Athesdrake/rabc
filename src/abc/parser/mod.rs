@@ -1,7 +1,6 @@
 mod instruction;
 mod iter;
 mod opcodes;
-mod parser;
 
 pub mod opargs;
 

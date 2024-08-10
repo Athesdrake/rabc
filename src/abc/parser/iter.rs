@@ -38,6 +38,7 @@ impl<'a> InsIterator<'a> {
     pub fn prev(&self) -> &Instruction {
         &self.instructions[self.cursor - 1]
     }
+    #[allow(clippy::should_implement_trait)]
     pub fn next(&mut self) -> Option<&mut Self> {
         self.cursor += 1;
         self.sanity()
@@ -47,32 +48,28 @@ impl<'a> InsIterator<'a> {
     }
     pub fn skip_until(&mut self, opcode: OpCode) -> Option<&mut Self> {
         while !self.is(opcode) {
-            if self.next().is_none() {
-                return None;
-            }
+            self.next()?;
         }
         Some(self)
     }
     pub fn skip_until_seq(&mut self, seq: &[OpCode]) -> Option<&Self> {
         while !self.is_sequence(seq) {
-            if self.next().is_none() {
-                return None;
-            }
+            self.next()?;
         }
         Some(self)
     }
     pub fn next_op(&mut self) -> Option<&Op> {
-        self.next().and_then(|p| Some(&p.get().op))
+        self.next().map(|p| &p.get().op)
     }
     pub fn skip_until_op(&'_ mut self, opcode: OpCode) -> Option<&'a Op> {
-        self.skip_until(opcode).and_then(|s| Some(&s.get().op))
+        self.skip_until(opcode).map(|s| &s.get().op)
     }
 
     pub fn is(&self, opcode: OpCode) -> bool {
         self.get().opcode == opcode
     }
     pub fn is_next(&self, opcode: OpCode) -> bool {
-        self.has_next() && &self.instructions[self.cursor + 1].opcode == &opcode
+        self.has_next() && self.instructions[self.cursor + 1].opcode == opcode
     }
     pub fn is_sequence(&self, seq: &[OpCode]) -> bool {
         if self.cursor + seq.len() > self.instructions.len() {
@@ -92,7 +89,7 @@ impl<'a> InsIterator<'a> {
     pub fn get_sequence(&'_ mut self, seq: &[OpCode]) -> Vec<&Op> {
         if self.is_sequence(seq) {
             self.cursor += seq.len();
-            (&self.instructions[self.cursor - seq.len()..self.cursor])
+            self.instructions[self.cursor - seq.len()..self.cursor]
                 .iter()
                 .map(|ins| &ins.op)
                 .collect()

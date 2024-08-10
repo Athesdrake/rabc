@@ -2,14 +2,14 @@ use super::info::*;
 use crate::error::{Error, Result};
 use crate::{StreamReader, StreamWriter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct AbcVersion {
     pub major: u16,
     pub minor: u16,
 }
 
 /// Represent an ABC file which contains compiled programs: constant data, instructions and various kinds of metdata
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct AbcFile {
     pub version: AbcVersion,
 
@@ -24,14 +24,7 @@ pub struct AbcFile {
 
 impl AbcFile {
     pub fn new() -> Self {
-        Self {
-            version: AbcVersion { major: 0, minor: 0 },
-            cpool: ConstantPool::new(),
-            methods: Vec::new(),
-            classes: Vec::new(),
-            scripts: Vec::new(),
-            metadatas: Vec::new(),
-        }
+        Self::default()
     }
 
     /// Read the abc content from a stream
@@ -168,7 +161,7 @@ impl AbcFile {
 
     /// Get the name of QName as a ref from the multiname index
     pub fn qname(&self, index: u32) -> Option<String> {
-        Some(self.qname_from_mn(self.cpool.multinames.get(index as usize)?)?)
+        self.qname_from_mn(self.cpool.multinames.get(index as usize)?)
     }
     /// Get the name of QName as a ref
     pub fn qname_from_mn(&self, mn: &Multiname) -> Option<String> {
@@ -181,7 +174,7 @@ impl AbcFile {
     }
     /// Get a multiname's name from its index
     pub fn str(&self, index: u32) -> Option<String> {
-        Some(self.str_from_mn(self.cpool.multinames.get(index as usize)?)?)
+        self.str_from_mn(self.cpool.multinames.get(index as usize)?)
     }
     /// Get a multiname's name
     pub fn str_from_mn(&self, mn: &Multiname) -> Option<String> {

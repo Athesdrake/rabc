@@ -1,5 +1,5 @@
 use super::ITag;
-use crate::{error::Result, StreamReader, StreamWriter, Movie};
+use crate::{error::Result, Movie, StreamReader, StreamWriter};
 
 #[derive(Debug, PartialEq)]
 pub struct DefineBinaryDataTag {

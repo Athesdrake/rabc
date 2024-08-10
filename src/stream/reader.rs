@@ -176,6 +176,10 @@ impl StreamReader {
         self.buffer.get_ref().len() as u32
     }
     #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+    #[inline]
     pub fn remaining(&self) -> u32 {
         self.len() - self.buffer.position() as u32
     }
@@ -193,7 +197,7 @@ impl StreamReader {
 
     #[inline]
     pub fn write_to_stream(&self, stream: &mut StreamWriter) -> Result<()> {
-        Ok(stream.write_exact(self.buffer.get_ref())?)
+        stream.write_exact(self.buffer.get_ref())
     }
 }
 

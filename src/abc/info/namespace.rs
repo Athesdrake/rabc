@@ -3,8 +3,9 @@ use crate::{
     StreamReader, StreamWriter,
 };
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum NamespaceKind {
+    #[default]
     Star = 0x0,
     Namespace = 0x08,
     Package = 0x16,
@@ -15,7 +16,7 @@ pub enum NamespaceKind {
     Private = 0x05,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Namespace {
     pub kind: NamespaceKind,
     pub name: u32,
@@ -23,10 +24,7 @@ pub struct Namespace {
 
 impl Namespace {
     pub fn new() -> Self {
-        Self {
-            kind: NamespaceKind::Star,
-            name: 0,
-        }
+        Self::default()
     }
 
     pub fn read(stream: &mut StreamReader) -> Result<Self> {

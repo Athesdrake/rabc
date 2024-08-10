@@ -70,7 +70,7 @@ impl ITag for FileAttributesTag {
     }
 
     fn write(&self, stream: &mut StreamWriter, _movie: &Movie) -> Result<()> {
-        stream.write_u8(self.flags.bits() as u8)?;
+        stream.write_u8(self.flags.bits())?;
         stream.write_u24(0)?;
         Ok(())
     }

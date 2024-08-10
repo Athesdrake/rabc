@@ -1,20 +1,19 @@
 use crate::{
     error::{Error, Result},
-    swf::{
-        datatypes::{Position, Rect},
-        tags::*,
-    },
+    swf::{datatypes::Rect, tags::*},
     StreamReader, StreamWriter,
 };
 use std::{collections::HashMap, fmt};
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Default)]
 pub enum Compression {
+    #[default]
     None,
     Zlib,
     Lzma,
 }
 
+#[derive(Debug)]
 pub struct Movie {
     pub compression: Compression,
     pub version: u8,
@@ -25,6 +24,21 @@ pub struct Movie {
 
     pub tags: Vec<Tag>,
     pub symbols: HashMap<u16, String>,
+}
+
+impl Default for Movie {
+    fn default() -> Self {
+        Self {
+            compression: Default::default(),
+            version: 14,
+            file_length: Default::default(),
+            framerate: Default::default(),
+            framecount: Default::default(),
+            framesize: Default::default(),
+            tags: Default::default(),
+            symbols: Default::default(),
+        }
+    }
 }
 
 pub struct Header {
@@ -68,19 +82,7 @@ impl Header {
 
 impl Movie {
     pub fn new() -> Self {
-        Self {
-            compression: Compression::None,
-            version: 14,
-            file_length: 0,
-            framerate: 0.0,
-            framecount: 0,
-            framesize: Rect {
-                min: Position { x: 0, y: 0 },
-                max: Position { x: 0, y: 0 },
-            },
-            tags: Vec::new(),
-            symbols: Default::default(),
-        }
+        Self::default()
     }
 
     pub fn read(stream: &mut StreamReader) -> Result<Self> {
@@ -203,13 +205,13 @@ impl Movie {
         None
     }
 
-    pub fn binaries<'a>(&'a self) -> impl Iterator<Item = &'a DefineBinaryDataTag> {
+    pub fn binaries(&self) -> impl Iterator<Item = &'_ DefineBinaryDataTag> {
         self.tags.iter().filter_map(|t| match t {
             Tag::DefineBinaryData(t) => Some(t),
             _ => None,
         })
     }
-    pub fn binaries_mut<'a>(&'a mut self) -> impl Iterator<Item = &'a mut DefineBinaryDataTag> {
+    pub fn binaries_mut(&mut self) -> impl Iterator<Item = &'_ mut DefineBinaryDataTag> {
         self.tags.iter_mut().filter_map(|t| match t {
             Tag::DefineBinaryData(t) => Some(t),
             _ => None,

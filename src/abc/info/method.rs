@@ -14,13 +14,19 @@ bitflags! {
     }
 }
 
+impl Default for MethodFlag {
+    fn default() -> Self {
+        MethodFlag::empty()
+    }
+}
+
 #[derive(PartialEq, Debug)]
 pub struct Option {
     pub value: u32,
     pub kind: u8,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub struct Method {
     pub return_type: u32,
     pub name: u32,
@@ -40,21 +46,7 @@ pub struct Method {
 
 impl Method {
     pub fn new() -> Self {
-        Self {
-            return_type: 0,
-            name: 0,
-            flags: MethodFlag::empty(),
-            optional: Vec::new(),
-            param_names: Vec::new(),
-            params: Vec::new(),
-            max_stack: 0,
-            local_count: 0,
-            init_scope_depth: 0,
-            max_scope_depth: 0,
-            code: Vec::new(),
-            exceptions: Vec::new(),
-            traits: Vec::new(),
-        }
+        Self::default()
     }
     pub fn read(stream: &mut StreamReader) -> Result<Self> {
         let mut count = stream.read_u30()?;

@@ -25,6 +25,6 @@ impl ITag for UnknownTag {
     }
 
     fn write(&self, stream: &mut StreamWriter, _movie: &Movie) -> Result<()> {
-        Ok(self.data.write_to_stream(stream)?)
+        self.data.write_to_stream(stream)
     }
 }

@@ -10,12 +10,18 @@ pub struct ScriptLimitsTag {
     pub script_timeout_seconds: u16,
 }
 
-impl ScriptLimitsTag {
-    pub fn new() -> Self {
+impl Default for ScriptLimitsTag {
+    fn default() -> Self {
         Self {
             max_recursion_depth: 256,
             script_timeout_seconds: 20,
         }
+    }
+}
+
+impl ScriptLimitsTag {
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 

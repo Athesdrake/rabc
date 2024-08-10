@@ -15,6 +15,6 @@ impl ITag for MetadataTag {
     }
 
     fn write(&self, stream: &mut StreamWriter, _movie: &Movie) -> Result<()> {
-        Ok(stream.write_null_string(&self.metadata)?)
+        stream.write_null_string(&self.metadata)
     }
 }
