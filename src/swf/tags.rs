@@ -100,7 +100,7 @@ pub enum Tag {
     ScriptLimits(ScriptLimitsTag),
     SetBackgroundColor(SetBackgroundColorTag),
     SymbolClass(SymbolClassTag),
-    DoABC(DoABCTag),
+    DoABC(Box<DoABCTag>),
     Unknown(UnknownTag),
 }
 
@@ -112,7 +112,7 @@ impl Tag {
     pub fn read(tag_type: TagID, stream: &mut StreamReader) -> Result<Self> {
         Ok(match tag_type {
             TagID::DefineBinaryData => Tag::DefineBinaryData(DefineBinaryDataTag::read(stream)?),
-            TagID::DoABC => Tag::DoABC(DoABCTag::read(stream)?),
+            TagID::DoABC => Tag::DoABC(Box::new(DoABCTag::read(stream)?)),
             TagID::End => Tag::End(EndTag::read(stream)?),
             TagID::FileAttributes => Tag::FileAttributes(FileAttributesTag::read(stream)?),
             TagID::Metadata => Tag::Metadata(MetadataTag::read(stream)?),

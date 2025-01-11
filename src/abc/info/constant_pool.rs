@@ -146,10 +146,10 @@ impl ConstantPool {
     }
 
     #[inline]
-    fn get<'a, T>(&'a self, name: &'static str, container: &'a [T], index: u32) -> Result<&T> {
+    fn get<'a, T>(&'a self, name: &'static str, container: &'a [T], index: u32) -> Result<&'a T> {
         container
             .get(index as usize)
-            .ok_or_else(|| RabcError::IndexOutOfBounds(name, index as usize, container.len()))
+            .ok_or(RabcError::IndexOutOfBounds(name, index as usize, container.len()))
     }
 
     #[inline]
