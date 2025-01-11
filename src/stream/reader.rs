@@ -1,4 +1,4 @@
-use crate::error::Result;
+use crate::error::{RabcError, Result};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::{BufRead, Cursor, Read, Seek, SeekFrom};
 
@@ -19,23 +19,23 @@ impl StreamReader {
     #[cfg(feature = "flate2")]
     pub fn inflate_zlib(&mut self, capacity: usize) -> Result<()> {
         use flate2::read::ZlibDecoder;
-        use std::mem::swap;
 
         // Create our input/output buffers
         let mut input = Cursor::new(Vec::with_capacity(capacity));
-        swap(&mut input, &mut self.buffer);
+        std::mem::swap(&mut input, &mut self.buffer);
 
         let pos = input.position() as usize;
         let mut decoder = ZlibDecoder::new(&input.get_ref()[pos..]);
 
         // decompress!
-        decoder.read_to_end(self.buffer.get_mut())?;
+        decoder
+            .read_to_end(self.buffer.get_mut())
+            .map_err(|e| RabcError::InvalidDeflateStream(e.to_string()))?;
         Ok(())
     }
     #[cfg(not(feature = "flate2"))]
     pub fn inflate_zlib(&mut self, _capacity: usize) -> Result<()> {
-        use crate::error::RabcError;
-        Err(Error::unsupported_compression("zlib"))
+        Err(RabcError::unsupported_compression("zlib"))
     }
 
     #[cfg(feature = "lzma-rs")]
@@ -61,15 +61,16 @@ impl StreamReader {
                 allow_incomplete: true,
                 memlimit: None,
             },
-        )?;
+        )
+        .map_err(|e| RabcError::InvalidLzmaStream(e.to_string()))?;
+
         // reset the position
         self.buffer.set_position(0);
         Ok(())
     }
     #[cfg(not(feature = "lzma-rs"))]
     pub fn inflate_lzma(&mut self, _capacity: usize) -> Result<()> {
-        use crate::error::RabcError;
-        Err(Error::unsupported_compression("lzma"))
+        Err(RabcError::unsupported_compression("lzma"))
     }
 
     #[inline]

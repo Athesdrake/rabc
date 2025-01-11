@@ -13,6 +13,10 @@ pub enum RabcError {
     InvalidCompression(char),
     #[error("Invalid signature: {0}")]
     InvalidSignature(String),
+    #[error("Invalid Deflate Stream: {0}")]
+    InvalidDeflateStream(String),
+    #[error("Invalid LZMA Stream: {0}")]
+    InvalidLzmaStream(String),
     #[error("Unsupported compression: {0}")]
     UnsupportedCompression(&'static str),
     #[error("Invalid namespace type: {0}")]
