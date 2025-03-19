@@ -47,15 +47,20 @@ impl Method {
             }
         }
 
-        if !targets.is_empty() {
-            for (target, indices) in targets {
-                instructions[addr2idx[&target]].jumps_here.extend(&indices);
+        for (target, indices) in targets {
+            if let Some(index) = addr2idx.get(&target) {
+                instructions[*index].jumps_here.extend(&indices);
                 for j in indices {
+                    instructions[addr2idx[&j]].targets.push(target);
+                }
+            } else {
+                // invalid target, jump to next instruction instead
+                for j in indices {
+                    let target = instructions[addr2idx[&j] + 1].addr;
                     instructions[addr2idx[&j]].targets.push(target);
                 }
             }
         }
-
         Ok(instructions)
     }
 
