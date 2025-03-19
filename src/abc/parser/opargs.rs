@@ -305,12 +305,12 @@ impl SerializeTrait for LookupSwitchArg {
     fn parse(stream: &mut StreamReader) -> Result<Self> {
         // The base address for the lookupswitch's targets is always the instruction's address unlike all other jump
         // instructions.
-        let addr = stream.pos() - 1;
-        let default_target = (addr as i32 + stream.read_i24()?) as u32;
+        let addr = stream.pos() as i32 - 1;
+        let default_target = (addr + stream.read_i24()?) as u32;
         let cases = stream.read_u30()?;
         let mut targets = Vec::with_capacity(cases as usize);
-        for _ in 0..cases {
-            targets.push((addr as i32 + stream.read_i24()?) as u32);
+        for _ in 0..=cases {
+            targets.push((addr + stream.read_i24()?) as u32);
         }
         Ok(Self {
             default_target,
