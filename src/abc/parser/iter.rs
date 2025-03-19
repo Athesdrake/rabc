@@ -14,7 +14,7 @@ impl<'a> InsIterator<'a> {
             None
         }
     }
-    pub fn new(instructions: &'a mut Vec<Instruction>, cursor: usize) -> Option<Self> {
+    pub fn new(instructions: &'a [Instruction], cursor: usize) -> Option<Self> {
         let prog = Self {
             instructions,
             cursor,
@@ -34,9 +34,15 @@ impl<'a> InsIterator<'a> {
     }
 
     /// Get the previous instruction
-    /// will panic if the cursor is 0
-    pub fn prev(&self) -> &Instruction {
-        &self.instructions[self.cursor - 1]
+    pub fn prev(&self) -> Option<&Instruction> {
+        if self.cursor > 0 {
+            Some(&self.instructions[self.cursor - 1])
+        } else {
+            None
+        }
+    }
+    pub fn prev_op(&mut self) -> Option<&Op> {
+        self.prev().map(|p| &p.op)
     }
     #[allow(clippy::should_implement_trait)]
     pub fn next(&mut self) -> Option<&mut Self> {
