@@ -181,9 +181,9 @@ impl Movie {
             let id = tag.id();
 
             if length < 0x3F {
-                stream.write_u16(id << 6 | (length & 0x3F) as u16)?;
+                stream.write_u16((id << 6) | (length & 0x3F) as u16)?;
             } else {
-                stream.write_u16(id << 6 | 0x3F)?;
+                stream.write_u16((id << 6) | 0x3F)?;
                 stream.write_u32(length as u32)?;
             }
             stream.write_stream(&stag)?;
