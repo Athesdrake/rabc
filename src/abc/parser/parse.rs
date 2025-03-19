@@ -73,7 +73,7 @@ impl Method {
 fn parse(stream: &mut StreamReader) -> Result<Instruction> {
     let addr = stream.pos();
     let byte = stream.read_u8()?;
-    let opcode = OpCode::from_u8(byte).ok_or(RabcError::InvalidOpCode(byte))?;
+    let opcode = OpCode::from_u8(byte).ok_or(RabcError::InvalidOpCode(byte, addr))?;
     let op = match opcode {
         OpCode::GetSuper => Op::GetSuper(opargs::MultinameArg::parse(stream)?),
         OpCode::SetSuper => Op::SetSuper(opargs::MultinameArg::parse(stream)?),

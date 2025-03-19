@@ -27,8 +27,8 @@ pub enum RabcError {
     MethodOutOfBound(u32),
     #[error("Invalid method kind: {0}")]
     InvalidTraitKind(u8),
-    #[error("Invalid opcode: {0}")]
-    InvalidOpCode(u8),
+    #[error("Invalid opcode: 0x{0:02x} at pos {1}")]
+    InvalidOpCode(u8, u32),
     #[error("Index out of bounds in {0}: {1} > {2}")]
     IndexOutOfBounds(&'static str, usize, usize),
 
