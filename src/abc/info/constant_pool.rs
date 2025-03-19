@@ -124,32 +124,62 @@ impl ConstantPool {
     }
 
     pub fn get_int(&self, index: u32) -> Result<&i32> {
-        self.get("integers", &self.integers, index)
+        Self::get("integers", &self.integers, index)
     }
     pub fn get_uint(&self, index: u32) -> Result<&u32> {
-        self.get("uintegers", &self.uintegers, index)
+        Self::get("uintegers", &self.uintegers, index)
     }
     pub fn get_double(&self, index: u32) -> Result<&f64> {
-        self.get("doubles", &self.doubles, index)
+        Self::get("doubles", &self.doubles, index)
     }
     pub fn get_str(&self, index: u32) -> Result<&String> {
-        self.get("strings", &self.strings, index)
+        Self::get("strings", &self.strings, index)
     }
     pub fn get_ns(&self, index: u32) -> Result<&Namespace> {
-        self.get("namespaces", &self.namespaces, index)
+        Self::get("namespaces", &self.namespaces, index)
     }
     pub fn get_ns_set(&self, index: u32) -> Result<&Vec<u32>> {
-        self.get("ns_sets", &self.ns_sets, index)
+        Self::get("ns_sets", &self.ns_sets, index)
     }
     pub fn get_mn(&self, index: u32) -> Result<&Multiname> {
-        self.get("multinames", &self.multinames, index)
+        Self::get("multinames", &self.multinames, index)
+    }
+
+    pub fn get_int_mut(&mut self, index: u32) -> Result<&mut i32> {
+        Self::get_mut("integers", &mut self.integers, index)
+    }
+    pub fn get_uint_mut(&mut self, index: u32) -> Result<&mut u32> {
+        Self::get_mut("uintegers", &mut self.uintegers, index)
+    }
+    pub fn get_double_mut(&mut self, index: u32) -> Result<&mut f64> {
+        Self::get_mut("doubles", &mut self.doubles, index)
+    }
+    pub fn get_str_mut(&mut self, index: u32) -> Result<&mut String> {
+        Self::get_mut("strings", &mut self.strings, index)
+    }
+    pub fn get_ns_mut(&mut self, index: u32) -> Result<&mut Namespace> {
+        Self::get_mut("namespaces", &mut self.namespaces, index)
+    }
+    pub fn get_ns_set_mut(&mut self, index: u32) -> Result<&mut Vec<u32>> {
+        Self::get_mut("ns_sets", &mut self.ns_sets, index)
+    }
+    pub fn get_mn_mut(&mut self, index: u32) -> Result<&mut Multiname> {
+        Self::get_mut("multinames", &mut self.multinames, index)
     }
 
     #[inline]
-    fn get<'a, T>(&'a self, name: &'static str, container: &'a [T], index: u32) -> Result<&'a T> {
+    fn get<'a, T>(name: &'static str, container: &'a [T], index: u32) -> Result<&'a T> {
+        let size = container.len();
         container
             .get(index as usize)
-            .ok_or(RabcError::IndexOutOfBounds(name, index as usize, container.len()))
+            .ok_or(RabcError::IndexOutOfBounds(name, index as usize, size))
+    }
+    #[inline]
+    fn get_mut<'a, T>(name: &'static str, container: &'a mut [T], index: u32) -> Result<&'a mut T> {
+        let size = container.len();
+        container
+            .get_mut(index as usize)
+            .ok_or(RabcError::IndexOutOfBounds(name, index as usize, size))
     }
 
     #[inline]
