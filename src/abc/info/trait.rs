@@ -4,8 +4,6 @@ use crate::{
 };
 use bitflags::bitflags;
 
-use super::Metadata;
-
 bitflags! {
     #[derive(Clone, Copy, Debug, PartialEq)]
     pub struct TraitAttr : u8 {
@@ -34,7 +32,7 @@ pub struct SlotTrait {
     pub slot_type: u32,
     pub index: u32,
     pub kind: u8,
-    pub metadatas: Vec<Metadata>,
+    pub metadatas: Vec<u32>,
 }
 #[derive(PartialEq, Debug)]
 pub struct IndexTrait {
@@ -42,7 +40,7 @@ pub struct IndexTrait {
     pub attr: TraitAttr,
     pub slot_id: u32,
     pub index: u32,
-    pub metadatas: Vec<Metadata>,
+    pub metadatas: Vec<u32>,
 }
 
 impl Trait {
@@ -58,6 +56,28 @@ impl Trait {
             | Trait::Class(t)
             | Trait::Function(t) => t.name,
         }
+    }
+    pub fn metadatas(&self) -> &Vec<u32> {
+        let t: &dyn ITrait = match self {
+            Trait::Slot(t) | Trait::Const(t) => t,
+            Trait::Method(t)
+            | Trait::Getter(t)
+            | Trait::Setter(t)
+            | Trait::Class(t)
+            | Trait::Function(t) => t,
+        };
+        t.metadatas()
+    }
+    pub fn metadatas_mut(&mut self) -> &mut Vec<u32> {
+        let t: &mut dyn ITrait = match self {
+            Trait::Slot(t) | Trait::Const(t) => t,
+            Trait::Method(t)
+            | Trait::Getter(t)
+            | Trait::Setter(t)
+            | Trait::Class(t)
+            | Trait::Function(t) => t,
+        };
+        t.metadatas_mut()
     }
 
     #[inline]
@@ -78,14 +98,14 @@ impl Trait {
     }
 
     #[inline]
-    pub fn read_metadata(stream: &mut StreamReader, attr: &TraitAttr) -> Result<Vec<Metadata>> {
+    pub fn read_metadata(stream: &mut StreamReader, attr: &TraitAttr) -> Result<Vec<u32>> {
         if !attr.contains(TraitAttr::METADATA) {
             return Ok(Vec::new());
         }
         let count = stream.read_u30()?;
         let mut metadatas = Vec::with_capacity(count as usize);
         for _ in 0..count {
-            metadatas.push(Metadata::read(stream)?);
+            metadatas.push(stream.read_u30()?);
         }
         Ok(metadatas)
     }
@@ -117,7 +137,7 @@ impl Trait {
         if !metadatas.is_empty() {
             stream.write_u30(metadatas.len() as u32)?;
             for metadata in metadatas {
-                metadata.write(stream)?;
+                stream.write_u30(*metadata)?;
             }
         }
         Ok(())
@@ -138,7 +158,7 @@ impl From<&Trait> for u8 {
     }
 }
 
-trait ITrait {
+pub trait ITrait {
     fn read(stream: &mut StreamReader, name: u32, attr: TraitAttr) -> Result<Self>
     where
         Self: Sized;
@@ -146,7 +166,8 @@ trait ITrait {
     fn write(&self, stream: &mut StreamWriter) -> Result<()>;
     fn attr(&self) -> TraitAttr;
     fn name(&self) -> u32;
-    fn metadatas(&self) -> &Vec<Metadata>;
+    fn metadatas(&self) -> &Vec<u32>;
+    fn metadatas_mut(&mut self) -> &mut Vec<u32>;
 }
 
 impl ITrait for SlotTrait {
@@ -184,8 +205,11 @@ impl ITrait for SlotTrait {
     fn name(&self) -> u32 {
         self.name
     }
-    fn metadatas(&self) -> &Vec<Metadata> {
+    fn metadatas(&self) -> &Vec<u32> {
         &self.metadatas
+    }
+    fn metadatas_mut(&mut self) -> &mut Vec<u32> {
+        &mut self.metadatas
     }
 }
 
@@ -216,7 +240,10 @@ impl ITrait for IndexTrait {
     fn name(&self) -> u32 {
         self.name
     }
-    fn metadatas(&self) -> &Vec<Metadata> {
+    fn metadatas(&self) -> &Vec<u32> {
         &self.metadatas
+    }
+    fn metadatas_mut(&mut self) -> &mut Vec<u32> {
+        &mut self.metadatas
     }
 }
