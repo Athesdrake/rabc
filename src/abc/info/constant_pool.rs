@@ -1,4 +1,4 @@
-use super::{Multiname, Namespace};
+use super::{Class, Multiname, Namespace};
 use crate::{
     error::{RabcError, Result},
     StreamReader, StreamWriter,
@@ -189,6 +189,107 @@ impl ConstantPool {
         } else {
             0u32
         }
+    }
+
+    /// Get the name of QName as a ref from the multiname index
+    pub fn qname(&self, index: u32) -> Option<String> {
+        self.qname_from_mn(self.get_mn(index).ok()?)
+    }
+    /// Get the name of QName as a ref
+    pub fn qname_from_mn(&self, mn: &Multiname) -> Option<String> {
+        match mn.get_name_index()? {
+            0 => None,
+            index => Some(self.get_str(index).ok()?.to_string()),
+        }
+    }
+    /// Get a multiname's name from its index
+    pub fn str(&self, index: u32) -> Option<String> {
+        self.str_from_mn(self.get_mn(index).ok()?)
+    }
+    /// Get a multiname's name
+    pub fn str_from_mn(&self, mn: &Multiname) -> Option<String> {
+        match mn {
+            Multiname::Multiname(_)
+            | Multiname::MultinameA(_)
+            | Multiname::QName(_)
+            | Multiname::QNameA(_)
+            | Multiname::RTQName(_)
+            | Multiname::RTQNameA(_)
+            | Multiname::RTQNameL(_)
+            | Multiname::RTQNameLA(_) => self.qname_from_mn(mn),
+            Multiname::MultinameL(m) | Multiname::MultinameLA(m) => {
+                self.str_from_ns_set(self.get_ns_set(m.ns_set).ok()?)
+            }
+            Multiname::Typename(t) => {
+                let mut types = String::new();
+                if !t.types.is_empty() {
+                    types.push('<');
+                    for type_ in &t.types {
+                        types.push_str(&self.str(*type_)?);
+                    }
+                    types.push('>');
+                }
+                Some(self.str(t.qname)? + &types)
+            }
+        }
+    }
+    /// Get a namespace set's name
+    pub fn str_from_ns_set(&self, ns_set: &Vec<u32>) -> Option<String> {
+        let mut name = String::new();
+        for index in ns_set {
+            if !name.is_empty() {
+                name.push_str("::");
+            }
+            let ns = self.get_ns(*index).ok()?;
+            name.push_str(&self.str_from_ns(ns)?);
+        }
+        Some(name)
+    }
+    /// Get a namespace's name
+    pub fn str_from_ns(&self, ns: &Namespace) -> Option<String> {
+        self.get_str(ns.name).ok().cloned()
+    }
+    /// Get a multiname's namespace's name
+    pub fn ns(&self, mn: &Multiname) -> Option<String> {
+        match mn {
+            Multiname::QName(mn) | Multiname::QNameA(mn) => {
+                if mn.ns == 0 {
+                    Some(String::new())
+                } else {
+                    self.str_from_ns(self.get_ns(mn.ns).ok()?)
+                }
+            }
+            Multiname::Multiname(mn) | Multiname::MultinameA(mn) => {
+                self.str_from_ns_set(self.get_ns_set(mn.ns_set).ok()?)
+            }
+            Multiname::MultinameL(mn) | Multiname::MultinameLA(mn) => {
+                self.str_from_ns_set(self.get_ns_set(mn.ns_set).ok()?)
+            }
+            Multiname::RTQName(_)
+            | Multiname::RTQNameA(_)
+            | Multiname::RTQNameL(_)
+            | Multiname::RTQNameLA(_)
+            | Multiname::Typename(_) => Some(String::new()),
+        }
+    }
+    /// Get the fully qualified name of a class: package::ClassName
+    pub fn fqn(&self, klass: &Class) -> Option<String> {
+        let mn = self.get_mn(klass.name).ok()?;
+        let mut name = self.ns(mn)?;
+        if !name.is_empty() {
+            name += "::";
+        }
+        name += match mn {
+            Multiname::QName(qname) | Multiname::QNameA(qname) => {
+                if qname.name == 0 {
+                    "*"
+                } else {
+                    self.get_str(qname.name).ok()?
+                }
+            }
+            _ => unreachable!(),
+        };
+        Some(name)
     }
 }
 

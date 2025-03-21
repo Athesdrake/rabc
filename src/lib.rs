@@ -3,19 +3,19 @@ pub mod error;
 pub mod stream;
 pub mod swf;
 
-pub use abc::AbcFile;
+pub use abc::{Abc, AbcFile};
 pub use stream::{StreamReader, StreamWriter};
 pub use swf::{Compression, Movie};
 
 #[cfg(test)]
 mod tests {
     use crate::{
-        stream::StreamReader,
-        stream::StreamWriter,
+        stream::{StreamReader, StreamWriter},
         swf::{
             tags::{Tag, TagID},
             Compression, Movie,
         },
+        AbcFile,
     };
     use std::{fs::File, io::Read};
 
@@ -47,9 +47,9 @@ mod tests {
                     println!("{}", meta.metadata);
                 }
                 Tag::DoABC(abc_tag) => {
-                    let abc = &abc_tag.abcfile;
+                    let AbcFile { abc, version, .. } = &abc_tag.abcfile;
                     println!("{} lazy:{}", abc_tag.name, abc_tag.lazy);
-                    println!("Abc {}.{}", abc.version.major, abc.version.minor);
+                    println!("Abc {}.{}", version.major, version.minor);
                     println!("\tmethods: {}", abc.methods.len());
                     println!("\tclasses: {}", abc.classes.len());
                     println!("\tscripts: {}", abc.scripts.len());
