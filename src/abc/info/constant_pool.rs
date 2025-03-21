@@ -191,3 +191,16 @@ impl ConstantPool {
         }
     }
 }
+
+pub trait PushGetIndex<T> {
+    fn pushi(&mut self, value: T) -> u32;
+}
+
+impl<T> PushGetIndex<T> for Vec<T> {
+    #[inline]
+    fn pushi(&mut self, value: T) -> u32 {
+        let index = self.len() as u32;
+        self.push(value);
+        index
+    }
+}
