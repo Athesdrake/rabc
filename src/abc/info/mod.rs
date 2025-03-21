@@ -15,5 +15,5 @@ pub use metadata::Metadata;
 pub use method::{Method, MethodFlag};
 pub use multiname::Multiname;
 pub use namespace::Namespace;
-pub use r#trait::Trait;
+pub use r#trait::{Trait, TraitAttr};
 pub use script::Script;

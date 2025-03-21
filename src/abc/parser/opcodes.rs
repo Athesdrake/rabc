@@ -2,7 +2,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
 use std::fmt::Display;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd, FromPrimitive, ToPrimitive, Hash)]
 pub enum OpCode {
     Bkpt = 0x01,
     Nop = 0x02,
