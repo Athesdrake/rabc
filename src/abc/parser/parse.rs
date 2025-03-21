@@ -1,12 +1,14 @@
 use super::{
     instruction::{Instruction, Op},
-    opargs, OpCode,
+    opargs::{self, SerializeTrait},
+    OpCode,
 };
 use crate::{
     abc::Method,
     error::{RabcError, Result},
-    StreamReader,
+    StreamReader, StreamWriter,
 };
+use num_traits::cast::ToPrimitive;
 use std::collections::HashMap;
 
 impl Method {
@@ -59,239 +61,79 @@ fn parse(stream: &mut StreamReader) -> Result<Instruction> {
     let byte = stream.read_u8()?;
     let opcode = OpCode::from_u8(byte).ok_or(RabcError::InvalidOpCode(byte))?;
     let op = match opcode {
-        OpCode::GetSuper => Op::GetSuper(opargs::MultinameArg {
-            mn: stream.read_u30()?,
-        }),
-        OpCode::SetSuper => Op::SetSuper(opargs::MultinameArg {
-            mn: stream.read_u30()?,
-        }),
-        OpCode::AsType => Op::AsType(opargs::MultinameArg {
-            mn: stream.read_u30()?,
-        }),
-        OpCode::IsType => Op::IsType(opargs::MultinameArg {
-            mn: stream.read_u30()?,
-        }),
-        OpCode::Kill => Op::Kill(opargs::RegisterArg {
-            register: stream.read_u30()?,
-        }),
-        OpCode::GetLocal => Op::GetLocal(opargs::RegisterArg {
-            register: stream.read_u30()?,
-        }),
-        OpCode::SetLocal => Op::SetLocal(opargs::RegisterArg {
-            register: stream.read_u30()?,
-        }),
-        OpCode::IncLocal => Op::IncLocal(opargs::RegisterArg {
-            register: stream.read_u30()?,
-        }),
-        OpCode::DecLocal => Op::DecLocal(opargs::RegisterArg {
-            register: stream.read_u30()?,
-        }),
-        OpCode::IncLocalI => Op::IncLocalI(opargs::RegisterArg {
-            register: stream.read_u30()?,
-        }),
-        OpCode::DecLocalI => Op::DecLocalI(opargs::RegisterArg {
-            register: stream.read_u30()?,
-        }),
-        OpCode::IfNlt
-        | OpCode::IfNle
-        | OpCode::IfNgt
-        | OpCode::IfNge
-        | OpCode::Jump
-        | OpCode::IfTrue
-        | OpCode::IfFalse
-        | OpCode::IfEq
-        | OpCode::IfNe
-        | OpCode::IfLt
-        | OpCode::IfLe
-        | OpCode::IfGt
-        | OpCode::IfGe
-        | OpCode::IfStrictEq
-        | OpCode::IfStrictNe => {
-            let target = (stream.read_i24()? + stream.pos() as i32) as u32;
-            let arg = opargs::TargetArg { target };
-            match opcode {
-                OpCode::IfNlt => Op::IfNlt(arg),
-                OpCode::IfNle => Op::IfNle(arg),
-                OpCode::IfNgt => Op::IfNgt(arg),
-                OpCode::IfNge => Op::IfNge(arg),
-                OpCode::Jump => Op::Jump(arg),
-                OpCode::IfTrue => Op::IfTrue(arg),
-                OpCode::IfFalse => Op::IfFalse(arg),
-                OpCode::IfEq => Op::IfEq(arg),
-                OpCode::IfNe => Op::IfNe(arg),
-                OpCode::IfLt => Op::IfLt(arg),
-                OpCode::IfLe => Op::IfLe(arg),
-                OpCode::IfGt => Op::IfGt(arg),
-                OpCode::IfGe => Op::IfGe(arg),
-                OpCode::IfStrictEq => Op::IfStrictEq(arg),
-                OpCode::IfStrictNe => Op::IfStrictNe(arg),
-                _ => unreachable!(),
-            }
-        }
-        OpCode::LookupSwitch => {
-            // The base address for the lookupswitch's targets is always the instruction's address unlike all other jump
-            // instructions.
-            let default_target = (addr as i32 + stream.read_i24()?) as u32;
-            let cases = stream.read_u30()?;
-            let mut targets = Vec::with_capacity(cases as usize);
-            for _ in 0..cases {
-                targets.push((addr as i32 + stream.read_i24()?) as u32);
-            }
-            Op::LookupSwitch(opargs::LookupSwitchArg {
-                default_target,
-                targets: targets.into(),
-            })
-        }
-        OpCode::Dxns => Op::Dxns(opargs::DxnsArg {
-            uri: stream.read_u30()?,
-        }),
-        OpCode::PushByte => Op::PushByte(opargs::PushByteArg {
-            value: stream.read_u8()?,
-        }),
-        OpCode::PushShort => Op::PushShort(opargs::PushShortArg {
-            value: stream.read_u30()? as i16,
-        }),
-        OpCode::PushString => Op::PushString(opargs::PushStringArg {
-            value: stream.read_u30()?,
-        }),
-        OpCode::PushInt => Op::PushInt(opargs::PushIntArg {
-            value: stream.read_u30()?,
-        }),
-        OpCode::PushUint => Op::PushUint(opargs::PushUintArg {
-            value: stream.read_u30()?,
-        }),
-        OpCode::PushDouble => Op::PushDouble(opargs::PushDoubleArg {
-            value: stream.read_u30()?,
-        }),
-        OpCode::PushNamespace => Op::PushNamespace(opargs::NamespaceArg {
-            ns: stream.read_u30()?,
-        }),
-        OpCode::HasNext2 => Op::HasNext2(opargs::HasNext2Arg {
-            object_register: stream.read_u30()?,
-            index_register: stream.read_u30()?,
-        }),
-        OpCode::NewFunction => Op::NewFunction(opargs::NewFunctionArg {
-            method: stream.read_u30()?,
-        }),
-        OpCode::Call => Op::Call(opargs::ArgsCountArg {
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::Construct => Op::Construct(opargs::ArgsCountArg {
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::CallMethod => Op::CallMethod(opargs::CallMethodDispArg {
-            disp_id: stream.read_u30()?,
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::CallStatic => Op::CallStatic(opargs::CallMethodArg {
-            method: stream.read_u30()?,
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::CallSuper => Op::CallSuper(opargs::CallMethodArg {
-            method: stream.read_u30()?,
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::CallProperty => Op::CallProperty(opargs::CallPropertyArg {
-            property: stream.read_u30()?,
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::ConstructSuper => Op::ConstructSuper(opargs::ArgsCountArg {
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::ConstructProp => Op::ConstructProp(opargs::CallPropertyArg {
-            property: stream.read_u30()?,
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::CallPropLex => Op::CallPropLex(opargs::CallPropertyArg {
-            property: stream.read_u30()?,
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::CallSuperVoid => Op::CallSuperVoid(opargs::CallMethodArg {
-            method: stream.read_u30()?,
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::CallPropVoid => Op::CallPropVoid(opargs::CallPropertyArg {
-            property: stream.read_u30()?,
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::ApplyType => Op::ApplyType(opargs::ArgsCountArg {
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::NewObject => Op::NewObject(opargs::NewObjectArg {
-            property_count: stream.read_u30()?,
-        }),
-        OpCode::NewArray => Op::NewArray(opargs::ArgsCountArg {
-            arg_count: stream.read_u30()?,
-        }),
-        OpCode::NewClass => Op::NewClass(opargs::NewClassArg {
-            class: stream.read_u30()?,
-        }),
-        OpCode::GetDescendants => Op::GetDescendants(opargs::GetDescendantsArg {
-            operand: stream.read_u30()?,
-        }),
-        OpCode::NewCatch => Op::NewCatch(opargs::NewCatchArg {
-            exception: stream.read_u30()?,
-        }),
-        OpCode::FindPropstrict => Op::FindPropStrict(opargs::PropertyArg {
-            property: stream.read_u30()?,
-        }),
-        OpCode::FindProperty => Op::FindProperty(opargs::PropertyArg {
-            property: stream.read_u30()?,
-        }),
-        OpCode::FindDef => Op::FindDef(opargs::PropertyArg {
-            property: stream.read_u30()?,
-        }),
-        OpCode::GetLex => Op::GetLex(opargs::PropertyArg {
-            property: stream.read_u30()?,
-        }),
-        OpCode::SetProperty => Op::SetProperty(opargs::PropertyArg {
-            property: stream.read_u30()?,
-        }),
-        OpCode::GetScopeObject => Op::GetScopeObject(opargs::ScopeArg {
-            scope: stream.read_u30()?,
-        }),
-        OpCode::GetProperty => Op::GetProperty(opargs::PropertyArg {
-            property: stream.read_u30()?,
-        }),
-        OpCode::GetOuterScope => Op::GetOuterScope(opargs::ScopeArg {
-            scope: stream.read_u30()?,
-        }),
-        OpCode::InitProperty => Op::InitProperty(opargs::PropertyArg {
-            property: stream.read_u30()?,
-        }),
-        OpCode::DeleteProperty => Op::DeleteProperty(opargs::PropertyArg {
-            property: stream.read_u30()?,
-        }),
-        OpCode::GetSlot => Op::GetSlot(opargs::SlotArg {
-            slot: stream.read_u30()?,
-        }),
-        OpCode::SetSlot => Op::SetSlot(opargs::SlotArg {
-            slot: stream.read_u30()?,
-        }),
-        OpCode::GetGlobalSlot => Op::GetGlobalSlot(opargs::SlotArg {
-            slot: stream.read_u30()?,
-        }),
-        OpCode::SetGlobalSlot => Op::SetGlobalSlot(opargs::SlotArg {
-            slot: stream.read_u30()?,
-        }),
-        OpCode::Coerce => Op::Coerce(opargs::CoerceArg {
-            index: stream.read_u30()?,
-        }),
-        OpCode::Debug => Op::Debug(opargs::DebugArg {
-            debug_type: stream.read_u8()?,
-            reg_name: stream.read_u30()?,
-            register: stream.read_u8()?,
-            extra: stream.read_u30()?,
-        }),
-        OpCode::DebugLine => Op::DebugLine(opargs::LineArg {
-            line: stream.read_u30()?,
-        }),
-        OpCode::DebugFile => Op::DebugFile(opargs::DebugFileArg {
-            filename: stream.read_u30()?,
-        }),
-        OpCode::BkptLine => Op::BkptLine(opargs::LineArg {
-            line: stream.read_u30()?,
-        }),
+        OpCode::GetSuper => Op::GetSuper(opargs::MultinameArg::parse(stream)?),
+        OpCode::SetSuper => Op::SetSuper(opargs::MultinameArg::parse(stream)?),
+        OpCode::AsType => Op::AsType(opargs::MultinameArg::parse(stream)?),
+        OpCode::IsType => Op::IsType(opargs::MultinameArg::parse(stream)?),
+        OpCode::Kill => Op::Kill(opargs::RegisterArg::parse(stream)?),
+        OpCode::GetLocal => Op::GetLocal(opargs::RegisterArg::parse(stream)?),
+        OpCode::SetLocal => Op::SetLocal(opargs::RegisterArg::parse(stream)?),
+        OpCode::IncLocal => Op::IncLocal(opargs::RegisterArg::parse(stream)?),
+        OpCode::DecLocal => Op::DecLocal(opargs::RegisterArg::parse(stream)?),
+        OpCode::IncLocalI => Op::IncLocalI(opargs::RegisterArg::parse(stream)?),
+        OpCode::DecLocalI => Op::DecLocalI(opargs::RegisterArg::parse(stream)?),
+        OpCode::IfNlt => Op::IfNlt(opargs::TargetArg::parse(stream)?),
+        OpCode::IfNle => Op::IfNle(opargs::TargetArg::parse(stream)?),
+        OpCode::IfNgt => Op::IfNgt(opargs::TargetArg::parse(stream)?),
+        OpCode::IfNge => Op::IfNge(opargs::TargetArg::parse(stream)?),
+        OpCode::Jump => Op::Jump(opargs::TargetArg::parse(stream)?),
+        OpCode::IfTrue => Op::IfTrue(opargs::TargetArg::parse(stream)?),
+        OpCode::IfFalse => Op::IfFalse(opargs::TargetArg::parse(stream)?),
+        OpCode::IfEq => Op::IfEq(opargs::TargetArg::parse(stream)?),
+        OpCode::IfNe => Op::IfNe(opargs::TargetArg::parse(stream)?),
+        OpCode::IfLt => Op::IfLt(opargs::TargetArg::parse(stream)?),
+        OpCode::IfLe => Op::IfLe(opargs::TargetArg::parse(stream)?),
+        OpCode::IfGt => Op::IfGt(opargs::TargetArg::parse(stream)?),
+        OpCode::IfGe => Op::IfGe(opargs::TargetArg::parse(stream)?),
+        OpCode::IfStrictEq => Op::IfStrictEq(opargs::TargetArg::parse(stream)?),
+        OpCode::IfStrictNe => Op::IfStrictNe(opargs::TargetArg::parse(stream)?),
+        OpCode::LookupSwitch => Op::LookupSwitch(opargs::LookupSwitchArg::parse(stream)?),
+        OpCode::Dxns => Op::Dxns(opargs::DxnsArg::parse(stream)?),
+        OpCode::PushByte => Op::PushByte(opargs::PushByteArg::parse(stream)?),
+        OpCode::PushShort => Op::PushShort(opargs::PushShortArg::parse(stream)?),
+        OpCode::PushString => Op::PushString(opargs::PushStringArg::parse(stream)?),
+        OpCode::PushInt => Op::PushInt(opargs::PushIntArg::parse(stream)?),
+        OpCode::PushUint => Op::PushUint(opargs::PushUintArg::parse(stream)?),
+        OpCode::PushDouble => Op::PushDouble(opargs::PushDoubleArg::parse(stream)?),
+        OpCode::PushNamespace => Op::PushNamespace(opargs::NamespaceArg::parse(stream)?),
+        OpCode::HasNext2 => Op::HasNext2(opargs::HasNext2Arg::parse(stream)?),
+        OpCode::NewFunction => Op::NewFunction(opargs::NewFunctionArg::parse(stream)?),
+        OpCode::Call => Op::Call(opargs::ArgsCountArg::parse(stream)?),
+        OpCode::Construct => Op::Construct(opargs::ArgsCountArg::parse(stream)?),
+        OpCode::CallMethod => Op::CallMethod(opargs::CallMethodDispArg::parse(stream)?),
+        OpCode::CallStatic => Op::CallStatic(opargs::CallMethodArg::parse(stream)?),
+        OpCode::CallSuper => Op::CallSuper(opargs::CallMethodArg::parse(stream)?),
+        OpCode::CallProperty => Op::CallProperty(opargs::CallPropertyArg::parse(stream)?),
+        OpCode::ConstructSuper => Op::ConstructSuper(opargs::ArgsCountArg::parse(stream)?),
+        OpCode::ConstructProp => Op::ConstructProp(opargs::CallPropertyArg::parse(stream)?),
+        OpCode::CallPropLex => Op::CallPropLex(opargs::CallPropertyArg::parse(stream)?),
+        OpCode::CallSuperVoid => Op::CallSuperVoid(opargs::CallMethodArg::parse(stream)?),
+        OpCode::CallPropVoid => Op::CallPropVoid(opargs::CallPropertyArg::parse(stream)?),
+        OpCode::ApplyType => Op::ApplyType(opargs::ArgsCountArg::parse(stream)?),
+        OpCode::NewObject => Op::NewObject(opargs::NewObjectArg::parse(stream)?),
+        OpCode::NewArray => Op::NewArray(opargs::ArgsCountArg::parse(stream)?),
+        OpCode::NewClass => Op::NewClass(opargs::NewClassArg::parse(stream)?),
+        OpCode::GetDescendants => Op::GetDescendants(opargs::GetDescendantsArg::parse(stream)?),
+        OpCode::NewCatch => Op::NewCatch(opargs::NewCatchArg::parse(stream)?),
+        OpCode::FindPropstrict => Op::FindPropStrict(opargs::PropertyArg::parse(stream)?),
+        OpCode::FindProperty => Op::FindProperty(opargs::PropertyArg::parse(stream)?),
+        OpCode::FindDef => Op::FindDef(opargs::PropertyArg::parse(stream)?),
+        OpCode::GetLex => Op::GetLex(opargs::PropertyArg::parse(stream)?),
+        OpCode::SetProperty => Op::SetProperty(opargs::PropertyArg::parse(stream)?),
+        OpCode::GetScopeObject => Op::GetScopeObject(opargs::ScopeArg::parse(stream)?),
+        OpCode::GetProperty => Op::GetProperty(opargs::PropertyArg::parse(stream)?),
+        OpCode::GetOuterScope => Op::GetOuterScope(opargs::ScopeArg::parse(stream)?),
+        OpCode::InitProperty => Op::InitProperty(opargs::PropertyArg::parse(stream)?),
+        OpCode::DeleteProperty => Op::DeleteProperty(opargs::PropertyArg::parse(stream)?),
+        OpCode::GetSlot => Op::GetSlot(opargs::SlotArg::parse(stream)?),
+        OpCode::SetSlot => Op::SetSlot(opargs::SlotArg::parse(stream)?),
+        OpCode::GetGlobalSlot => Op::GetGlobalSlot(opargs::SlotArg::parse(stream)?),
+        OpCode::SetGlobalSlot => Op::SetGlobalSlot(opargs::SlotArg::parse(stream)?),
+        OpCode::Coerce => Op::Coerce(opargs::CoerceArg::parse(stream)?),
+        OpCode::Debug => Op::Debug(opargs::DebugArg::parse(stream)?),
+        OpCode::BkptLine => Op::BkptLine(opargs::LineArg::parse(stream)?),
+        OpCode::DebugLine => Op::DebugLine(opargs::LineArg::parse(stream)?),
+        OpCode::DebugFile => Op::DebugFile(opargs::DebugFileArg::parse(stream)?),
         OpCode::Bkpt => Op::Bkpt(),
         OpCode::Nop => Op::Nop(),
         OpCode::Throw => Op::Throw(),
@@ -400,4 +242,81 @@ fn parse(stream: &mut StreamReader) -> Result<Instruction> {
         targets: Vec::new(),
         jumps_here: Vec::new(),
     })
+}
+
+fn serialize(ins: &Instruction, stream: &mut StreamWriter) -> Result<()> {
+    stream.write_u8(ins.opcode.to_u8().unwrap())?;
+    match &ins.op {
+        Op::ApplyType(args)
+        | Op::Call(args)
+        | Op::Construct(args)
+        | Op::ConstructSuper(args)
+        | Op::NewArray(args) => args.serialize(stream),
+        Op::AsType(args) | Op::GetSuper(args) | Op::IsType(args) | Op::SetSuper(args) => {
+            args.serialize(stream)
+        }
+        Op::BkptLine(args) | Op::DebugLine(args) => args.serialize(stream),
+        Op::CallMethod(args) => args.serialize(stream),
+        Op::CallProperty(args)
+        | Op::CallPropLex(args)
+        | Op::CallPropVoid(args)
+        | Op::ConstructProp(args) => args.serialize(stream),
+        Op::CallStatic(args) | Op::CallSuper(args) | Op::CallSuperVoid(args) => {
+            args.serialize(stream)
+        }
+        Op::Coerce(args) => args.serialize(stream),
+        Op::Debug(args) => args.serialize(stream),
+        Op::DebugFile(args) => args.serialize(stream),
+        Op::DecLocal(args)
+        | Op::DecLocalI(args)
+        | Op::GetLocal(args)
+        | Op::IncLocal(args)
+        | Op::IncLocalI(args)
+        | Op::Kill(args)
+        | Op::SetLocal(args) => args.serialize(stream),
+        Op::DeleteProperty(args)
+        | Op::FindDef(args)
+        | Op::FindProperty(args)
+        | Op::FindPropStrict(args)
+        | Op::GetLex(args)
+        | Op::GetProperty(args)
+        | Op::InitProperty(args)
+        | Op::SetProperty(args) => args.serialize(stream),
+        Op::Dxns(args) => args.serialize(stream),
+        Op::GetDescendants(args) => args.serialize(stream),
+        Op::GetGlobalSlot(args)
+        | Op::GetSlot(args)
+        | Op::SetGlobalSlot(args)
+        | Op::SetSlot(args) => args.serialize(stream),
+        Op::GetOuterScope(args) | Op::GetScopeObject(args) => args.serialize(stream),
+        Op::HasNext2(args) => args.serialize(stream),
+        Op::IfEq(args)
+        | Op::IfFalse(args)
+        | Op::IfGe(args)
+        | Op::IfGt(args)
+        | Op::IfLe(args)
+        | Op::IfLt(args)
+        | Op::IfNe(args)
+        | Op::IfNge(args)
+        | Op::IfNgt(args)
+        | Op::IfNle(args)
+        | Op::IfNlt(args)
+        | Op::IfStrictEq(args)
+        | Op::IfStrictNe(args)
+        | Op::IfTrue(args)
+        | Op::Jump(args) => args.serialize(stream),
+        Op::LookupSwitch(args) => args.serialize(stream),
+        Op::NewCatch(args) => args.serialize(stream),
+        Op::NewClass(args) => args.serialize(stream),
+        Op::NewFunction(args) => args.serialize(stream),
+        Op::NewObject(args) => args.serialize(stream),
+        Op::PushByte(args) => args.serialize(stream),
+        Op::PushDouble(args) => args.serialize(stream),
+        Op::PushInt(args) => args.serialize(stream),
+        Op::PushNamespace(args) => args.serialize(stream),
+        Op::PushShort(args) => args.serialize(stream),
+        Op::PushString(args) => args.serialize(stream),
+        Op::PushUint(args) => args.serialize(stream),
+        _ => Ok(()),
+    }
 }
