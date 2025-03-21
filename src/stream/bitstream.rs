@@ -3,14 +3,14 @@ use crate::StreamReader;
 use crate::StreamWriter;
 use std::cmp::min;
 
-pub struct BitStreamReader<'a> {
-    stream: &'a mut StreamReader,
+pub struct BitStreamReader<'a, 'b> {
+    stream: &'a mut StreamReader<'b>,
     current_byte: u8,
     bitpos: u8,
 }
 
-impl<'a> BitStreamReader<'a> {
-    pub fn new(stream: &'a mut StreamReader) -> Self {
+impl<'a, 'b> BitStreamReader<'a, 'b> {
+    pub fn new(stream: &'a mut StreamReader<'b>) -> Self {
         Self {
             stream,
             current_byte: 0,

@@ -26,8 +26,7 @@ mod tests {
         let mut buf = Vec::new();
         file.read_to_end(&mut buf).unwrap();
 
-        let mut stream = StreamReader::new(buf);
-        let movie = Movie::read(&mut stream).unwrap();
+        let movie = Movie::read(StreamReader::new(&buf)).unwrap();
         println!("Parsing took {}ms", now.elapsed().as_millis());
 
         assert_eq!(movie.version, 14);
@@ -70,13 +69,12 @@ mod tests {
         let mut buf = Vec::new();
         file.read_to_end(&mut buf).unwrap();
 
-        let mut stream = StreamReader::new(buf);
-        let mut movie = Movie::read(&mut stream).unwrap();
-
+        let mut movie = Movie::read(StreamReader::new(&buf)).unwrap();
         movie.compression = Compression::Lzma;
 
         let now = std::time::Instant::now();
-        let mut out_stream = StreamWriter::new(Vec::with_capacity(stream.len() as usize));
+        let mut out_stream =
+            StreamWriter::new(Vec::with_capacity(StreamReader::new(&buf).len() as usize));
         movie.write(&mut out_stream).unwrap();
         println!("Writing took {}ms", now.elapsed().as_millis());
         let out_file = File::create("test_out.swf").unwrap();
@@ -87,7 +85,6 @@ mod tests {
         let mut buf = Vec::new();
         file.read_to_end(&mut buf).unwrap();
 
-        let mut stream = StreamReader::new(buf);
-        let _movie = Movie::read(&mut stream).unwrap();
+        let _movie = Movie::read(StreamReader::new(&buf)).unwrap();
     }
 }

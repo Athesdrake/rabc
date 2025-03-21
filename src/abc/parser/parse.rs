@@ -13,10 +13,7 @@ use std::collections::HashMap;
 
 impl Method {
     pub fn parse(&self) -> Result<Vec<Instruction>> {
-        // Here, we make a copy, because I didn't register a lifetime for the StreamReader's buffer
-        // TODO: don't copy
-        let buf = self.code.to_vec();
-        let mut stream = StreamReader::new(buf);
+        let mut stream = StreamReader::new(&self.code);
         let mut instructions: Vec<Instruction> = Vec::new();
         let mut targets: HashMap<u32, Vec<usize>> = HashMap::new();
         while !stream.finished() {

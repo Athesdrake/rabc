@@ -94,16 +94,20 @@ impl Movie {
         Self::default()
     }
 
-    pub fn read(stream: &mut StreamReader) -> Result<Self> {
-        let header = Header::read(stream)?;
+    pub fn read(mut stream: StreamReader) -> Result<Self> {
+        let header = Header::read(&mut stream)?;
         let size = header.file_length as usize;
-        match header.compression {
-            Compression::Zlib => stream.inflate_zlib(size - 8)?,
-            Compression::Lzma => stream.inflate_lzma(size - 8)?,
-            Compression::None => {}
+        let buffer = match header.compression {
+            Compression::Zlib => Some(stream.inflate_zlib(size - 8)?),
+            Compression::Lzma => Some(stream.inflate_lzma(size - 8)?),
+            Compression::None => None,
+        };
+        let mut stream = match &buffer {
+            Some(buffer) => StreamReader::new(buffer),
+            None => stream,
         };
 
-        let framesize = Rect::read(stream)?;
+        let framesize = Rect::read(&mut stream)?;
         let framerate = (stream.read_u8()? as f64) / 256.0 + (stream.read_u8()? as f64);
         let framecount = stream.read_u16()?;
         let mut tags: Vec<Tag> = Vec::new();
@@ -119,12 +123,13 @@ impl Movie {
                 _ => (hdr & 0x3F).into(),
             };
 
-            let mut data = vec![0u8; length as usize];
-            stream.read_exact(data.as_mut())?;
+            let pos = stream.pos();
+            stream.skip(length)?;
+            let data = &stream.buffer.get_ref()[pos as usize..(pos + length) as usize];
             let mut ts = StreamReader::new(data);
 
             if tag_type == TagID::Unknown {
-                tags.push(Tag::Unknown(UnknownTag::read_with_id(&mut ts, tag_id)?));
+                tags.push(Tag::Unknown(UnknownTag::read_with_id(data, tag_id)?));
             } else {
                 let tag = Tag::read(tag_type, &mut ts)?;
                 if let Tag::SymbolClass(t) = &tag {
@@ -266,7 +271,7 @@ mod tests {
 
     #[test]
     pub fn read_header() {
-        let mut stream = StreamReader::new((b"FWS\x0e,\x0f\x01\x00").to_vec());
+        let mut stream = StreamReader::new(b"FWS\x0e,\x0f\x01\x00");
         let header = Header::read(&mut stream).unwrap();
         assert_eq!(header.compression, Compression::None);
         assert_eq!(header.version, 14);

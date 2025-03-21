@@ -15,8 +15,8 @@ fn oldmain() {
         (buf.len() as f64) / (took.as_secs_f64() * GIGA)
     );
 
-    let mut stream = StreamReader::new(buf);
-    let movie = Movie::read(&mut stream).unwrap();
+    let stream = StreamReader::new(&buf);
+    let movie = Movie::read(stream).unwrap();
     println!("Parsing took {}ms", now.elapsed().as_millis());
     println!("fps: {}", movie.framerate);
 }
@@ -27,13 +27,13 @@ fn main() {
     let mut buf = Vec::new();
     file.read_to_end(&mut buf).unwrap();
 
-    let mut stream = StreamReader::new(buf);
-    let _movie = Movie::read(&mut stream).unwrap();
+    let stream = StreamReader::new(&buf);
+    let _movie = Movie::read(stream).unwrap();
 
     let mut file = File::open("test_lzma.swf").unwrap();
     let mut buf = Vec::new();
     file.read_to_end(&mut buf).unwrap();
 
-    let mut stream = StreamReader::new(buf);
-    let _movie = Movie::read(&mut stream).unwrap();
+    let stream = StreamReader::new(&buf);
+    let _movie = Movie::read(stream).unwrap();
 }
