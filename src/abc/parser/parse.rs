@@ -51,6 +51,16 @@ impl Method {
 
         Ok(instructions)
     }
+
+    pub fn save_instructions(&mut self, instructions: &[Instruction]) -> Result<()> {
+        let mut stream = StreamWriter::new(Vec::with_capacity(self.code.len()));
+        for ins in instructions {
+            serialize(ins, &mut stream)?;
+        }
+
+        self.code = stream.move_buffer();
+        Ok(())
+    }
 }
 
 fn parse(stream: &mut StreamReader) -> Result<Instruction> {

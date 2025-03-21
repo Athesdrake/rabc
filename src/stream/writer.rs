@@ -82,6 +82,11 @@ impl StreamWriter {
     }
 
     #[inline]
+    pub fn move_buffer(self) -> Vec<u8> {
+        self.buffer
+    }
+
+    #[inline]
     pub fn write_u8(&mut self, value: u8) -> Result<()> {
         Ok(self.buffer.write_u8(value)?)
     }
