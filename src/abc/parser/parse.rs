@@ -15,11 +15,13 @@ impl Method {
     pub fn parse(&self) -> Result<Vec<Instruction>> {
         let mut stream = StreamReader::new(&self.code);
         let mut instructions: Vec<Instruction> = Vec::new();
-        let mut targets: HashMap<u32, Vec<usize>> = HashMap::new();
+        let mut targets: HashMap<u32, Vec<u32>> = HashMap::new();
+        let mut addr2idx = HashMap::new();
         while !stream.finished() {
             instructions.push(parse(&mut stream)?);
             let ins = instructions.last().unwrap();
             let i = instructions.len() - 1;
+            addr2idx.insert(ins.addr, i);
 
             if let Op::IfNlt(arg)
             | Op::IfNle(arg)
@@ -37,14 +39,19 @@ impl Method {
             | Op::IfStrictEq(arg)
             | Op::IfStrictNe(arg) = &ins.op
             {
-                targets.entry(arg.target).or_default().push(i);
+                targets.entry(arg.target).or_default().push(ins.addr);
+            } else if let Op::LookupSwitch(arg) = &ins.op {
+                for target in [arg.default_target].iter().chain(arg.targets.iter()) {
+                    targets.entry(*target).or_default().push(ins.addr);
+                }
             }
         }
 
         if !targets.is_empty() {
-            for ins in instructions.iter_mut() {
-                if let Some(ts) = targets.get(&ins.addr) {
-                    ins.targets.extend(ts);
+            for (target, indices) in targets {
+                instructions[addr2idx[&target]].jumps_here.extend(&indices);
+                for j in indices {
+                    instructions[addr2idx[&j]].targets.push(target);
                 }
             }
         }

@@ -6,8 +6,8 @@ pub struct Instruction {
     pub op: Op,
     pub addr: u32,
 
-    pub targets: Vec<usize>,
-    pub jumps_here: Vec<usize>,
+    pub targets: Vec<u32>,
+    pub jumps_here: Vec<u32>,
 }
 
 trait U30Trait {
