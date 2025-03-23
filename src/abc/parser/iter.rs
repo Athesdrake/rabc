@@ -34,14 +34,14 @@ impl<'a> InsIterator<'a> {
     }
 
     /// Get the previous instruction
-    pub fn prev(&self) -> Option<&Instruction> {
+    pub fn prev(&self) -> Option<&'a Instruction> {
         if self.cursor > 0 {
             Some(&self.instructions[self.cursor - 1])
         } else {
             None
         }
     }
-    pub fn prev_op(&mut self) -> Option<&Op> {
+    pub fn prev_op(&mut self) -> Option<&'a Op> {
         self.prev().map(|p| &p.op)
     }
     #[allow(clippy::should_implement_trait)]
@@ -76,7 +76,7 @@ impl<'a> InsIterator<'a> {
     pub fn skip_until_op<M: OpMatch>(&'_ mut self, matcher: &M) -> Option<&'a Op> {
         self.skip_until(matcher).map(|s| &s.get().op)
     }
-    pub fn next_op(&mut self) -> Option<&Op> {
+    pub fn next_op(&mut self) -> Option<&'a Op> {
         self.next().map(|p| &p.get().op)
     }
 
@@ -107,7 +107,7 @@ impl<'a> InsIterator<'a> {
         }
     }
 
-    pub fn peek(&self, offset: i32) -> Option<&Op> {
+    pub fn peek(&self, offset: i32) -> Option<&'a Op> {
         self.instructions
             .get((self.cursor as i32 + offset) as usize)
             .map(|ins| &ins.op)
