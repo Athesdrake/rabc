@@ -30,7 +30,7 @@ impl Instruction {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Op {
     Add(),
     AddI(),
