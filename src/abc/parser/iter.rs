@@ -1,9 +1,9 @@
-use super::{Instruction, Op, OpCode};
+use super::{opmatch::OpMatch, Instruction, Op, OpCode};
 
 #[derive(Debug)]
 pub struct InsIterator<'a> {
-    instructions: &'a [Instruction],
-    cursor: usize,
+    pub(crate) instructions: &'a [Instruction],
+    pub(crate) cursor: usize,
 }
 
 impl<'a> InsIterator<'a> {
@@ -52,55 +52,58 @@ impl<'a> InsIterator<'a> {
     pub fn has_next(&self) -> bool {
         self.cursor < self.instructions.len()
     }
-    pub fn skip_until(&mut self, opcode: OpCode) -> Option<&mut Self> {
-        while !self.is(opcode) {
+    pub fn skip_until<M: OpMatch>(&mut self, matcher: &M) -> Option<&mut Self> {
+        while !self.is(matcher) {
             self.next()?;
         }
         Some(self)
     }
-    pub fn skip_until_seq(&mut self, seq: &[OpCode]) -> Option<&Self> {
-        while !self.is_sequence(seq) {
-            self.next()?;
+    pub fn skip_until_match<M: OpMatch>(&'_ mut self, matcher: &M) -> Vec<&'a Op> {
+        loop {
+            if let Some(length) = matcher.matches(self) {
+                self.cursor += length;
+                return self.instructions[self.cursor - length..self.cursor]
+                    .iter()
+                    .map(|ins| &ins.op)
+                    .collect();
+            }
+            if self.next().is_none() {
+                break;
+            }
         }
-        Some(self)
+        Vec::new()
+    }
+    pub fn skip_until_op<M: OpMatch>(&'_ mut self, matcher: &M) -> Option<&'a Op> {
+        self.skip_until(matcher).map(|s| &s.get().op)
     }
     pub fn next_op(&mut self) -> Option<&Op> {
         self.next().map(|p| &p.get().op)
     }
-    pub fn skip_until_op(&'_ mut self, opcode: OpCode) -> Option<&'a Op> {
-        self.skip_until(opcode).map(|s| &s.get().op)
-    }
 
-    pub fn is(&self, opcode: OpCode) -> bool {
-        self.get().opcode == opcode
+    pub fn is<M: OpMatch>(&self, matcher: &M) -> bool {
+        matcher.matches(self).is_some()
     }
-    pub fn is_next(&self, opcode: OpCode) -> bool {
-        self.has_next() && self.instructions[self.cursor + 1].opcode == opcode
-    }
-    pub fn is_sequence(&self, seq: &[OpCode]) -> bool {
-        if self.cursor + seq.len() > self.instructions.len() {
-            return false;
-        }
-        for (i, opcode) in seq.iter().enumerate() {
-            if self.instructions[self.cursor + i].opcode != *opcode {
-                return false;
-            }
-        }
-        true
+    pub fn is_next<M: OpMatch>(&self, matcher: &M) -> bool {
+        let prog = Self {
+            instructions: self.instructions,
+            cursor: self.cursor + 1,
+        };
+        self.has_next() && matcher.matches(&prog).is_some()
     }
 
     pub fn get(&'_ self) -> &'a Instruction {
         &self.instructions[self.cursor]
     }
-    pub fn get_sequence(&'_ mut self, seq: &[OpCode]) -> Vec<&Op> {
-        if self.is_sequence(seq) {
-            self.cursor += seq.len();
-            self.instructions[self.cursor - seq.len()..self.cursor]
-                .iter()
-                .map(|ins| &ins.op)
-                .collect()
-        } else {
-            vec![]
+    pub fn get_match<M: OpMatch>(&'_ mut self, matcher: &M) -> Vec<&'a Op> {
+        match matcher.matches(self) {
+            Some(length) => {
+                self.cursor += length;
+                self.instructions[self.cursor - length..self.cursor]
+                    .iter()
+                    .map(|ins| &ins.op)
+                    .collect()
+            }
+            None => Vec::new(),
         }
     }
 
