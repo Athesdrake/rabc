@@ -13,7 +13,7 @@ pub enum Compression {
     Lzma,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Movie {
     pub compression: Compression,
     pub version: u8,
@@ -41,6 +41,7 @@ impl Default for Movie {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Header {
     pub compression: Compression,
     pub version: u8,

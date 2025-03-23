@@ -20,13 +20,13 @@ impl Default for MethodFlag {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Option {
     pub value: u32,
     pub kind: u8,
 }
 
-#[derive(PartialEq, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Method {
     pub return_type: u32,
     pub name: u32,

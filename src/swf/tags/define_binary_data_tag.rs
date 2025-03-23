@@ -1,7 +1,7 @@
 use super::ITag;
 use crate::{error::Result, Movie, StreamReader, StreamWriter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct DefineBinaryDataTag {
     pub char_id: u16,
     pub data: Vec<u8>,

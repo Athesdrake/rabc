@@ -1,13 +1,13 @@
 use super::ITag;
 use crate::{error::Result, Movie, StreamReader, StreamWriter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Version {
     pub major: u8,
     pub minor: u8,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ProductInfoTag {
     pub product_id: u32,
     pub edition: u32,

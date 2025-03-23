@@ -1,6 +1,6 @@
 use super::{opmatch::OpMatch, Instruction, Op, OpCode};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct InsIterator<'a> {
     pub(crate) instructions: &'a [Instruction],
     pub(crate) cursor: usize,

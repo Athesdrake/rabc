@@ -2,14 +2,14 @@ use super::info::*;
 use crate::error::{RabcError, Result};
 use crate::{StreamReader, StreamWriter};
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct AbcVersion {
     pub major: u16,
     pub minor: u16,
 }
 
 /// Represent an ABC file which contains compiled programs: constant data, instructions and various kinds of metdata
-#[derive(Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct AbcFile {
     /// AVM2 version
     pub version: AbcVersion,
@@ -19,7 +19,7 @@ pub struct AbcFile {
     pub abc: Abc,
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct Abc {
     pub classes: Vec<Class>,
     pub metadatas: Vec<Metadata>,

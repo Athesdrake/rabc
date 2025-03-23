@@ -90,7 +90,7 @@ pub trait ITag {
     fn write(&self, stream: &mut StreamWriter, movie: &Movie) -> Result<()>;
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Tag {
     DefineBinaryData(DefineBinaryDataTag),
     End(EndTag),

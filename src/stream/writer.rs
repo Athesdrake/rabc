@@ -2,7 +2,7 @@ use crate::error::Result;
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::io::Write;
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct StreamWriter {
     buffer: Vec<u8>,
 }

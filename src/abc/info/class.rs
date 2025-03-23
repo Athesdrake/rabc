@@ -12,7 +12,7 @@ bitflags! {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Class {
     pub name: u32,
     pub super_name: u32,

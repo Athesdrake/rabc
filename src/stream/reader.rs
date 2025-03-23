@@ -4,7 +4,7 @@ use std::io::{BufRead, Cursor, Read, Seek, SeekFrom};
 
 use super::StreamWriter;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct StreamReader<'a> {
     pub(crate) buffer: Cursor<&'a [u8]>,
 }

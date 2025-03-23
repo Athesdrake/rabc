@@ -13,7 +13,7 @@ bitflags! {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FileAttributesTag {
     flags: FileAttributes,
 }

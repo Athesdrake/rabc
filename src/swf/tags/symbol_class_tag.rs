@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use super::ITag;
 use crate::{error::Result, Movie, StreamReader, StreamWriter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SymbolClassTag {
     /// ignored when writing. Use Movie.symbols instead
     pub symbols: HashMap<u16, String>,

@@ -1,7 +1,7 @@
 use super::ITag;
 use crate::{error::Result, Movie, StreamReader, StreamWriter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ScriptLimitsTag {
     /// Set the max recursion limit. Default is 256
     pub max_recursion_depth: u16,

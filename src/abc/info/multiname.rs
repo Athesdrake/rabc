@@ -3,7 +3,7 @@ use crate::{
     StreamReader, StreamWriter,
 };
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Multiname {
     QName(QName),
     QNameA(QName),
@@ -18,25 +18,25 @@ pub enum Multiname {
     Typename(Typename),
 }
 
-#[derive(PartialEq, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct QName {
     pub ns: u32,
     pub name: u32,
 }
-#[derive(PartialEq, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct RTQName {
     pub name: u32,
 }
-#[derive(PartialEq, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Multi {
     pub name: u32,
     pub ns_set: u32,
 }
-#[derive(PartialEq, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct MultiL {
     pub ns_set: u32,
 }
-#[derive(PartialEq, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Typename {
     pub qname: u32,
     pub types: Vec<u32>,

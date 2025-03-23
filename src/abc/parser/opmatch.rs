@@ -2,11 +2,12 @@ use std::ops::BitOr;
 
 use super::{InsIterator, OpCode};
 
+#[derive(Debug)]
 pub struct AnyOp(Vec<Box<dyn OpMatch>>);
 #[derive(Debug, Clone, Copy)]
 pub struct OpSeq<const S: usize>(pub [OpCode; S]);
 
-pub trait OpMatch {
+pub trait OpMatch: std::fmt::Debug {
     fn matches(&self, prog: &InsIterator) -> Option<usize>;
 }
 

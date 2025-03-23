@@ -1,7 +1,7 @@
 use super::ITag;
 use crate::{error::Result, swf::datatypes::Rgb, Movie, StreamReader, StreamWriter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SetBackgroundColorTag {
     pub color: Rgb,
 }

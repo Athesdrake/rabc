@@ -1,6 +1,6 @@
 use crate::{error::Result, StreamReader, StreamWriter};
 
-#[derive(PartialEq, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Exception {
     pub from: u32,
     pub to: u32,

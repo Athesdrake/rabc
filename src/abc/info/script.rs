@@ -1,7 +1,7 @@
 use super::Trait;
 use crate::{error::Result, StreamReader, StreamWriter};
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Script {
     init: u32,
     traits: Vec<Trait>,

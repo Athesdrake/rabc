@@ -3,7 +3,7 @@ use crate::{
     StreamReader, StreamWriter,
 };
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum NamespaceKind {
     #[default]
     Star = 0x0,
@@ -16,7 +16,7 @@ pub enum NamespaceKind {
     Private = 0x05,
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct Namespace {
     pub kind: NamespaceKind,
     pub name: u32,

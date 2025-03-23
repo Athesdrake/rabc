@@ -3,6 +3,7 @@ use crate::StreamReader;
 use crate::StreamWriter;
 use std::cmp::min;
 
+#[derive(Debug)]
 pub struct BitStreamReader<'a, 'b> {
     stream: &'a mut StreamReader<'b>,
     current_byte: u8,
@@ -55,6 +56,7 @@ impl<'a, 'b> BitStreamReader<'a, 'b> {
     }
 }
 
+#[derive(Debug)]
 pub struct BitStreamWriter<'a> {
     stream: &'a mut StreamWriter,
     current_byte: u8,

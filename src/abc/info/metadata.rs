@@ -1,12 +1,12 @@
 use crate::{error::Result, StreamReader, StreamWriter};
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct MetadataItem {
     pub key: u32,
     pub value: u32,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Metadata {
     pub name: u32,
     pub items: Vec<MetadataItem>,

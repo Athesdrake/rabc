@@ -13,7 +13,7 @@ bitflags! {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Trait {
     Slot(SlotTrait),
     Method(IndexTrait),
@@ -24,7 +24,7 @@ pub enum Trait {
     Const(SlotTrait),
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SlotTrait {
     pub name: u32,
     pub attr: TraitAttr,
@@ -34,7 +34,7 @@ pub struct SlotTrait {
     pub kind: u8,
     pub metadatas: Vec<u32>,
 }
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct IndexTrait {
     pub name: u32,
     pub attr: TraitAttr,

@@ -1,7 +1,7 @@
 use super::ITag;
 use crate::{error::Result, Movie, StreamReader, StreamWriter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct MetadataTag {
     /// Metadata as xml
     pub metadata: String,

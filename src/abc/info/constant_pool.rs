@@ -4,7 +4,7 @@ use crate::{
     StreamReader, StreamWriter,
 };
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct ConstantPool {
     pub integers: Vec<i32>,
     pub uintegers: Vec<u32>,
