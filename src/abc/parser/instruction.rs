@@ -337,7 +337,7 @@ impl Op {
             Op::Dxns(op) => op.uri.u30size(),
             Op::BkptLine(op) | Op::DebugLine(op) => op.line.u30size(),
             Op::CallStatic(op) | Op::CallSuper(op) | Op::CallSuperVoid(op) => {
-                op.arg_count.u30size()
+                op.arg_count.u30size() + op.method.u30size()
             }
             Op::Coerce(op) => op.index.u30size(),
             Op::DebugFile(op) => op.filename.u30size(),
@@ -376,7 +376,7 @@ impl Op {
             Op::Debug(op) => 2 + op.reg_name.u30size() + op.extra.u30size(),
             Op::HasNext2(op) => op.index_register.u30size() + op.object_register.u30size(),
             Op::LookupSwitch(op) => {
-                (op.targets.len() + 1) as u32 * 3 + (op.targets.len() as u32).u30size()
+                (op.targets.len() + 1) as u32 * 3 + (op.targets.len() as u32 - 1).u30size()
             }
         }
     }
