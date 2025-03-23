@@ -307,9 +307,9 @@ impl SerializeTrait for LookupSwitchArg {
         // instructions.
         let addr = stream.pos() as i32 - 1;
         let default_target = (addr + stream.read_i24()?) as u32;
-        let cases = stream.read_u30()?;
+        let cases = stream.read_u30()? + 1;
         let mut targets = Vec::with_capacity(cases as usize);
-        for _ in 0..=cases {
+        for _ in 0..cases {
             targets.push((addr + stream.read_i24()?) as u32);
         }
         Ok(Self {
@@ -319,8 +319,8 @@ impl SerializeTrait for LookupSwitchArg {
     }
     fn serialize(&self, stream: &mut StreamWriter) -> Result<()> {
         let addr = (stream.len() - 1) as i32;
-        stream.write_u30((self.default_target as i32 - addr) as u32)?;
-        stream.write_u30(self.targets.len() as u32)?;
+        stream.write_i24(self.default_target as i32 - addr)?;
+        stream.write_u30(self.targets.len() as u32 - 1)?;
         for target in &self.targets {
             stream.write_i24(*target as i32 - addr)?;
         }
