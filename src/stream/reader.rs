@@ -124,8 +124,8 @@ impl<'a> StreamReader<'a> {
         let mut value: u32 = 0;
 
         for i in (0..35).step_by(7) {
-            let byte = self.buffer.read_u8()? as u32;
-            value += (byte & 0x7f) << i;
+            let byte = self.buffer.read_u8()?;
+            value += ((byte & 0x7f) as u32) << i;
             if byte & 0x80 == 0 {
                 break;
             }
