@@ -13,10 +13,12 @@ use std::collections::HashMap;
 
 impl Method {
     pub fn parse(&self) -> Result<Vec<Instruction>> {
+        // Instructions takes on average 2.5 bytes, which can be used to pre-allocate containers
+        let size_hint = self.code.len() / 2;  // use a bigger ratio of 2
         let mut stream = StreamReader::new(&self.code);
-        let mut instructions: Vec<Instruction> = Vec::new();
+        let mut instructions: Vec<Instruction> = Vec::with_capacity(size_hint);
         let mut targets: HashMap<u32, Vec<u32>> = HashMap::new();
-        let mut addr2idx = HashMap::new();
+        let mut addr2idx = HashMap::with_capacity(size_hint);
         while !stream.finished() {
             instructions.push(parse(&mut stream)?);
             let ins = instructions.last().unwrap();
