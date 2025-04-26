@@ -5,7 +5,7 @@ use crate::{
 use bitflags::bitflags;
 
 bitflags! {
-    #[derive(Clone, Copy, Debug, PartialEq)]
+    #[derive(Clone, Copy, Debug, PartialEq, Default)]
     pub struct TraitAttr : u8 {
         const FINAL = 0x01;
         const OVERRIDE = 0x02;
@@ -24,7 +24,7 @@ pub enum Trait {
     Const(SlotTrait),
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct SlotTrait {
     pub name: u32,
     pub attr: TraitAttr,
@@ -34,7 +34,7 @@ pub struct SlotTrait {
     pub kind: u8,
     pub metadatas: Vec<u32>,
 }
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct IndexTrait {
     pub name: u32,
     pub attr: TraitAttr,
